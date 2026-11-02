@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../services/api_service.dart';
 import '../utils/ui.dart';
+import 'admin/admin_main_screen.dart';
 import 'main_screen.dart';
 import 'registrasi_screen.dart';
 
@@ -52,9 +53,15 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _loading = false);
 
     if (result.success) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const MainScreen()),
-      );
+      if (result.role == 'admin') {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const AdminMainScreen()),
+        );
+      } else {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const MainScreen()),
+        );
+      }
     } else {
       showMessage(context, result.message);
     }
@@ -113,7 +120,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           color: _accent,
                         ),
                       ),
-                      const SizedBox(height: 64),
+                      const SizedBox(height: 52),
                       const Text(
                         'Meja favoritmu\nsudah menunggu.',
                         style: TextStyle(
@@ -132,7 +139,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           color: _muted,
                         ),
                       ),
-                      const SizedBox(height: 44),
+                      const SizedBox(height: 36),
                       TextField(
                         controller: _emailCtrl,
                         keyboardType: TextInputType.emailAddress,
@@ -157,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             splashRadius: 20,
                             icon: Icon(
                               _hidePassword
-                                  ? Icons.visibility_outlined
+                                   ? Icons.visibility_outlined
                                   : Icons.visibility_off_outlined,
                               size: 20,
                               color: _muted,
@@ -172,7 +179,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         alignment: Alignment.centerRight,
                         child: TextButton(
                           onPressed: () {
-                            // TODO: halaman lupa password
+                            showMessage(
+                              context,
+                              'Silakan hubungi administrator restoran untuk reset password.',
+                            );
                           },
                           style: TextButton.styleFrom(
                             foregroundColor: _muted,
@@ -186,7 +196,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 24),
                       SizedBox(
                         width: double.infinity,
                         height: 52,

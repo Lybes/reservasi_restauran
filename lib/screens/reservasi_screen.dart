@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../data/cart_store.dart';
 import '../data/reservasi_store.dart';
 import '../models/reservasi_data.dart';
+import '../services/api_service.dart';
 import '../theme/app_colors.dart';
 import '../utils/ui.dart';
+import '../widgets/cart_crud_modal.dart';
 import '../widgets/primary_button.dart';
 import 'konfirmasi_screen.dart';
 import 'menu_list_screen.dart';
@@ -22,6 +25,7 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
   static const _opsiRuangan = ['VVIP', 'Indoor', 'Outdoor'];
 
   final _dateFormat = DateFormat('EEEE, d MMMM yyyy', 'id_ID');
+  final _currency = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp', decimalDigits: 0);
 
   final _tanggalCtrl = TextEditingController();
   final _waktuCtrl = TextEditingController();
@@ -36,6 +40,14 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
   void initState() {
     super.initState();
     _resetForm(notify: false);
+    _prefillName();
+  }
+
+  Future<void> _prefillName() async {
+    final name = await ApiService.currentUserNama();
+    if (name != null && name.isNotEmpty && mounted) {
+      setState(() => _namaCtrl.text = name);
+    }
   }
 
   @override
@@ -52,10 +64,10 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
       _selectedDate = DateTime.now();
       _tanggalCtrl.text = _dateFormat.format(_selectedDate);
       _waktuCtrl.clear();
-      _namaCtrl.clear();
       _menuCtrl.clear();
       _jumlahOrang = null;
       _ruangan = null;
+      CartStore.instance.clear();
     }
 
     if (notify) {
@@ -81,6 +93,33 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
     }
   }
 
+  /// Buka halaman pemilihan Menu List statis
+  Future<void> _pilihMenu() async {
+    final result = await Navigator.of(context).push<String>(
+      MaterialPageRoute(builder: (_) => const MenuListScreen()),
+    );
+
+    // Otomatis isi ke field list menu dari keranjang pesanan
+    final summary = result ?? CartStore.instance.toSummaryString();
+    if (mounted) {
+      setState(() {
+        _menuCtrl.text = summary;
+      });
+    }
+  }
+
+  /// Buka Modal Keranjang dengan fungsi CRUD lengkap
+  Future<void> _bukaModalKeranjang() async {
+    await CartCrudModal.show(context);
+    // Setelah modal CRUD selesai, update langsung field list menu
+    final summary = CartStore.instance.toSummaryString();
+    if (mounted) {
+      setState(() {
+        _menuCtrl.text = summary;
+      });
+    }
+  }
+
   void _pesan() {
     final nama = _namaCtrl.text.trim();
     final tanggal = _tanggalCtrl.text.trim();
@@ -96,16 +135,44 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
     }
 
     final menu = _menuCtrl.text.trim();
-    ReservasiStore.instance.add(
-      ReservasiData(
-        namaLengkap: nama,
-        tanggalKedatangan: tanggal,
-        waktu: waktu,
-        listMenu: menu.isEmpty ? 'Tidak Ada' : menu,
-        jumlahOrang: _jumlahOrang!,
-        ruangan: _ruangan!,
-        status: 'Menunggu Konfirmasi',
-      ),
+    final cart = CartStore.instance;
+
+    // Hitung total harga dasar ruangan + total menu
+    int roomRate = 50000;
+    if (_ruangan == 'Outdoor') roomRate = 75000;
+    if (_ruangan == 'VVIP') roomRate = 150000;
+    final totalEstimasi = roomRate * 2 + cart.totalPrice;
+
+    final resv = ReservasiData(
+      namaLengkap: nama,
+      tanggalKedatangan: tanggal,
+      waktu: waktu,
+      listMenu: menu.isEmpty ? 'Tidak Ada' : menu,
+      jumlahOrang: _jumlahOrang!,
+      ruangan: _ruangan!,
+      status: 'Menunggu Konfirmasi',
+      totalHarga: totalEstimasi,
+      items: cart.items
+          .map((i) => {
+                'nama': i.item.name,
+                'harga': i.priceNumeric,
+                'jumlah': i.quantity,
+                'subtotal': i.subtotal,
+              })
+          .toList(),
+    );
+    ReservasiStore.instance.add(resv);
+
+    // Persist ke database MySQL db_reservasipml
+    final dateIso = _selectedDate.toIso8601String().split('T')[0];
+    ApiService.createReservation(
+      customerName: nama,
+      roomName: _ruangan!,
+      tanggal: dateIso,
+      waktu: waktu,
+      jumlahOrang: _jumlahOrang!,
+      totalHarga: totalEstimasi,
+      catatan: menu.isNotEmpty ? 'Menu: $menu' : '',
     );
 
     _resetForm();
@@ -141,7 +208,7 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
                 const SizedBox(height: 12),
                 const Divider(height: 1, color: AppColors.divider),
                 const SizedBox(height: 12),
-                const _Label('Tanggal kedatangan*'),
+                const _Label('Tanggal Reservasi*'),
                 _Field(
                   controller: _tanggalCtrl,
                   hint: 'select a date...',
@@ -151,22 +218,137 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
                 ),
                 const SizedBox(height: 14),
                 const _Label('Pilih waktu*'),
-                _Field(controller: _waktuCtrl, hint: 'Isi jam kedatangan'),
+                _Field(controller: _waktuCtrl, hint: 'Contoh: 18:00 - 20:00'),
                 const SizedBox(height: 14),
                 const _Label('Nama Lengkap*'),
                 _Field(controller: _namaCtrl, hint: 'Nama Lengkap'),
                 const SizedBox(height: 14),
-                const _Label('List menu *'),
-                _Field(controller: _menuCtrl, hint: 'Pilih menu'),
-                const SizedBox(height: 8),
-                PrimaryButton(
-                  label: 'Menu List',
-                  height: 45,
-                  width: double.infinity,
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const MenuListScreen()),
+
+                // Field List Menu (Otomatis terisi dari keranjang pesanan)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const _Label('List menu *'),
+                    ListenableBuilder(
+                      listenable: CartStore.instance,
+                      builder: (context, _) {
+                        if (CartStore.instance.isEmpty) {
+                          return const SizedBox.shrink();
+                        }
+                        return InkWell(
+                          onTap: _bukaModalKeranjang,
+                          child: const Row(
+                            children: [
+                              Icon(Icons.edit_note, size: 16, color: AppColors.button),
+                              SizedBox(width: 4),
+                              Text(
+                                'Kelola Keranjang (CRUD)',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.button,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                _Field(
+                  controller: _menuCtrl,
+                  hint: 'Klik "Menu List" untuk memilih menu makanan & minuman',
+                  readOnly: true,
+                  onTap: _pilihMenu,
+                  suffix: IconButton(
+                    icon: const Icon(Icons.shopping_cart_outlined, size: 20),
+                    onPressed: _bukaModalKeranjang,
                   ),
                 ),
+                const SizedBox(height: 8),
+
+                // Rincian Ringkas Keranjang jika sudah memilih menu
+                ListenableBuilder(
+                  listenable: CartStore.instance,
+                  builder: (context, _) {
+                    final cart = CartStore.instance;
+
+                    if (cart.isEmpty) {
+                      return PrimaryButton(
+                        label: 'Menu List',
+                        height: 45,
+                        width: double.infinity,
+                        onPressed: _pilihMenu,
+                      );
+                    }
+
+                    return Container(
+                      margin: const EdgeInsets.only(top: 4, bottom: 4),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.fieldBg,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppColors.divider),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                '${cart.totalCount} Menu Dipesan',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                  color: AppColors.textDark,
+                                ),
+                              ),
+                              Text(
+                                _currency.format(cart.totalPrice),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: AppColors.button,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: _bukaModalKeranjang,
+                                  icon: const Icon(Icons.shopping_bag_outlined, size: 16),
+                                  label: const Text('Tampilkan Pesanan'),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: AppColors.button,
+                                    side: const BorderSide(color: AppColors.button),
+                                    padding: const EdgeInsets.symmetric(vertical: 8),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: PrimaryButton(
+                                  label: '+ Tambah Menu',
+                                  height: 38,
+                                  onPressed: _pilihMenu,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+
                 const SizedBox(height: 18),
                 const _Label('Untuk Berapa Orang?*'),
                 _RadioGroup(
