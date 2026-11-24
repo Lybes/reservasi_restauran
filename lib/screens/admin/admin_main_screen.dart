@@ -141,17 +141,17 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
           NavigationDestination(
             icon: Icon(Icons.edit_calendar_outlined),
             selectedIcon: Icon(Icons.edit_calendar),
-            label: 'Reservasi',
+            label: 'Kelola Reservasi'
           ),
           NavigationDestination(
             icon: Icon(Icons.restaurant_menu_outlined),
             selectedIcon: Icon(Icons.restaurant_menu),
-            label: 'Menu',
+            label: 'Kelola Menu'
           ),
           NavigationDestination(
             icon: Icon(Icons.table_restaurant_outlined),
             selectedIcon: Icon(Icons.table_restaurant),
-            label: 'Ruangan',
+            label: 'Kelola Ruangan',
           ),
         ],
       ),

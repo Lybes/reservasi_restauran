@@ -164,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             splashRadius: 20,
                             icon: Icon(
                               _hidePassword
-                                   ? Icons.visibility_outlined
+                                  ? Icons.visibility_outlined
                                   : Icons.visibility_off_outlined,
                               size: 20,
                               color: _muted,
@@ -175,28 +175,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: () {
-                            showMessage(
-                              context,
-                              'Silakan hubungi administrator restoran untuk reset password.',
-                            );
-                          },
-                          style: TextButton.styleFrom(
-                            foregroundColor: _muted,
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          child: const Text(
-                            'Lupa password?',
-                            style: TextStyle(fontSize: 13),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 32),
                       SizedBox(
                         width: double.infinity,
                         height: 52,
