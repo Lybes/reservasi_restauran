@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';   // benar
 
 import '../services/api_service.dart';
 import '../utils/ui.dart';
@@ -26,7 +26,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordFocus = FocusNode();
   final _confirmFocus = FocusNode();
 
-  String _role = 'pelanggan';
   bool _hidePassword = true;
   bool _hideConfirm = true;
   bool _loading = false;
@@ -69,7 +68,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     setState(() => _loading = true);
-    final result = await ApiService.register(nama, email, password, role: _role);
+    // Role otomatis 'pelanggan' (default di ApiService.register)
+    final result = await ApiService.register(nama, email, password);
     if (!mounted) return;
     setState(() => _loading = false);
 
@@ -146,7 +146,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Daftar untuk mulai memesan meja atau mengelola restoran.',
+                'Daftar untuk mulai memesan meja.',
                 style: TextStyle(fontSize: 14, height: 1.5, color: _muted),
               ),
               const SizedBox(height: 28),
@@ -200,104 +200,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       () => setState(() => _hideConfirm = !_hideConfirm)),
                 ),
               ),
-              const SizedBox(height: 20),
-
-              // Role selection
-              const Text(
-                'Daftar Sebagai:',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: _ink,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: InkWell(
-                      onTap: () => setState(() => _role = 'pelanggan'),
-                      borderRadius: BorderRadius.circular(8),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        decoration: BoxDecoration(
-                          color: _role == 'pelanggan'
-                              ? _accent.withValues(alpha: 0.12)
-                              : Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: _role == 'pelanggan' ? _accent : _line,
-                            width: _role == 'pelanggan' ? 1.5 : 1,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.person_outline,
-                              size: 18,
-                              color: _role == 'pelanggan' ? _accent : _muted,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Pelanggan',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: _role == 'pelanggan'
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                                color: _role == 'pelanggan' ? _accent : _muted,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: InkWell(
-                      onTap: () => setState(() => _role = 'admin'),
-                      borderRadius: BorderRadius.circular(8),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        decoration: BoxDecoration(
-                          color: _role == 'admin'
-                              ? _accent.withValues(alpha: 0.12)
-                              : Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: _role == 'admin' ? _accent : _line,
-                            width: _role == 'admin' ? 1.5 : 1,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.admin_panel_settings_outlined,
-                              size: 18,
-                              color: _role == 'admin' ? _accent : _muted,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Admin Resto',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: _role == 'admin'
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                                color: _role == 'admin' ? _accent : _muted,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
               const SizedBox(height: 28),
               SizedBox(
                 width: double.infinity,
