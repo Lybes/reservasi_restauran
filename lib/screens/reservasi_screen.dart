@@ -5,10 +5,8 @@ import '../data/cart_store.dart';
 import '../data/reservasi_store.dart';
 import '../models/reservasi_data.dart';
 import '../services/api_service.dart';
-import '../theme/app_colors.dart';
 import '../utils/ui.dart';
 import '../widgets/cart_crud_modal.dart';
-import '../widgets/primary_button.dart';
 import 'konfirmasi_screen.dart';
 import 'menu_list_screen.dart';
 
@@ -21,11 +19,25 @@ class ReservasiScreen extends StatefulWidget {
 }
 
 class _ReservasiScreenState extends State<ReservasiScreen> {
-  static const _opsiJumlahOrang = ['1 orang', '2-4 orang', '5-10 orang', '10+ orang'];
+  static const _accent = Color(0xFF9A4A32);
+  static const _ink = Color(0xFF2B2420);
+  static const _muted = Color(0xFF8C8178);
+  static const _line = Color(0xFFE9E1D8);
+  static const _canvas = Color(0xFFF7F1E8);
+  static const _field = Color(0xFFFBF9F6);
+  static const _selected = Color(0xFFF4E8E3);
+
+  static const _opsiJumlahOrang = [
+    '1 orang',
+    '2-4 orang',
+    '5-10 orang',
+    '10+ orang'
+  ];
   static const _opsiRuangan = ['VVIP', 'Indoor', 'Outdoor'];
 
   final _dateFormat = DateFormat('EEEE, d MMMM yyyy', 'id_ID');
-  final _currency = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp', decimalDigits: 0);
+  final _currency =
+      NumberFormat.currency(locale: 'id_ID', symbol: 'Rp', decimalDigits: 0);
 
   final _tanggalCtrl = TextEditingController();
   final _waktuCtrl = TextEditingController();
@@ -184,199 +196,376 @@ class _ReservasiScreenState extends State<ReservasiScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.pageBg,
+      backgroundColor: _canvas,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Reservasi',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textDark,
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.event_available_rounded,
+                      color: _accent,
+                      size: 25,
+                    ),
                   ),
+                  const SizedBox(width: 14),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'TABEBUYA RESTAURANT',
+                          style: TextStyle(
+                            color: _accent,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.4,
+                          ),
+                        ),
+                        SizedBox(height: 3),
+                        Text(
+                          'Buat reservasi',
+                          style: TextStyle(
+                            color: _ink,
+                            fontFamily: 'serif',
+                            fontSize: 27,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Pilih waktu, ruangan, dan menu untuk kunjunganmu.',
+                style: TextStyle(color: _muted, fontSize: 14, height: 1.4),
+              ),
+              const SizedBox(height: 22),
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: Colors.white),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x12000000),
+                      blurRadius: 24,
+                      offset: Offset(0, 10),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 12),
-                const Divider(height: 1, color: AppColors.divider),
-                const SizedBox(height: 12),
-                const _Label('Tanggal Reservasi*'),
-                _Field(
-                  controller: _tanggalCtrl,
-                  hint: 'select a date...',
-                  readOnly: true,
-                  onTap: _pickDate,
-                  suffix: const Icon(Icons.calendar_today, size: 20),
-                ),
-                const SizedBox(height: 14),
-                const _Label('Pilih waktu*'),
-                _Field(controller: _waktuCtrl, hint: 'Contoh: 18:00 - 20:00'),
-                const SizedBox(height: 14),
-                const _Label('Nama Lengkap*'),
-                _Field(controller: _namaCtrl, hint: 'Nama Lengkap'),
-                const SizedBox(height: 14),
-
-                // Field List Menu (Otomatis terisi dari keranjang pesanan)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const _Label('List menu *'),
+                    const _SectionTitle(
+                      icon: Icons.schedule_rounded,
+                      title: 'Detail kunjungan',
+                      subtitle: 'Tentukan jadwal dan data pemesan.',
+                    ),
+                    const SizedBox(height: 18),
+                    const _Label('Tanggal reservasi'),
+                    _Field(
+                      controller: _tanggalCtrl,
+                      hint: 'Pilih tanggal',
+                      readOnly: true,
+                      onTap: _pickDate,
+                      prefixIcon: Icons.calendar_month_outlined,
+                      suffix:
+                          const Icon(Icons.expand_more_rounded, color: _muted),
+                    ),
+                    const SizedBox(height: 14),
+                    const _Label('Waktu kedatangan'),
+                    _Field(
+                      controller: _waktuCtrl,
+                      hint: 'Contoh: 18:00 - 20:00',
+                      prefixIcon: Icons.access_time_rounded,
+                    ),
+                    const SizedBox(height: 14),
+                    const _Label('Nama pemesan'),
+                    _Field(
+                      controller: _namaCtrl,
+                      hint: 'Nama lengkap',
+                      prefixIcon: Icons.person_outline_rounded,
+                    ),
+                    const SizedBox(height: 22),
+                    const Divider(height: 1, color: _line),
+                    const SizedBox(height: 20),
+                    const _SectionTitle(
+                      icon: Icons.groups_2_outlined,
+                      title: 'Atur tempat duduk',
+                      subtitle: 'Pilih jumlah tamu dan suasana ruangan.',
+                    ),
+                    const SizedBox(height: 16),
+                    const _Label('Jumlah tamu'),
+                    _RadioGroup(
+                      options: _opsiJumlahOrang,
+                      value: _jumlahOrang,
+                      onChanged: (v) => setState(() => _jumlahOrang = v),
+                    ),
+                    const SizedBox(height: 16),
+                    const _Label('Ruangan pilihan'),
+                    _RadioGroup(
+                      options: _opsiRuangan,
+                      value: _ruangan,
+                      onChanged: (v) => setState(() => _ruangan = v),
+                    ),
+                    const SizedBox(height: 22),
+                    const Divider(height: 1, color: _line),
+                    const SizedBox(height: 20),
+                    const _SectionTitle(
+                      icon: Icons.restaurant_menu_rounded,
+                      title: 'Menu pilihan',
+                      subtitle: 'Menu bisa ditambahkan sekarang atau nanti.',
+                    ),
+                    const SizedBox(height: 16),
+                    _Field(
+                      controller: _menuCtrl,
+                      hint: 'Pilih makanan dan minuman',
+                      readOnly: true,
+                      onTap: _pilihMenu,
+                      prefixIcon: Icons.restaurant_outlined,
+                      suffix: IconButton(
+                        tooltip: 'Buka keranjang',
+                        icon: const Icon(
+                          Icons.shopping_bag_outlined,
+                          color: _accent,
+                        ),
+                        onPressed: _bukaModalKeranjang,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
                     ListenableBuilder(
                       listenable: CartStore.instance,
                       builder: (context, _) {
-                        if (CartStore.instance.isEmpty) {
-                          return const SizedBox.shrink();
-                        }
-                        return InkWell(
-                          onTap: _bukaModalKeranjang,
-                          child: const Row(
-                            children: [
-                              Icon(Icons.edit_note, size: 16, color: AppColors.button),
-                              SizedBox(width: 4),
-                              Text(
-                                'Kelola Keranjang (CRUD)',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.button,
+                        final cart = CartStore.instance;
+
+                        if (cart.isEmpty) {
+                          return SizedBox(
+                            width: double.infinity,
+                            height: 48,
+                            child: OutlinedButton.icon(
+                              onPressed: _pilihMenu,
+                              icon: const Icon(Icons.add_rounded),
+                              label: const Text('Pilih menu'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: _accent,
+                                side: const BorderSide(color: _line),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
                                 ),
+                              ),
+                            ),
+                          );
+                        }
+
+                        return Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: _field,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: _line),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      '${cart.totalCount} item dipilih',
+                                      style: const TextStyle(
+                                        color: _ink,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  Text(
+                                    _currency.format(cart.totalPrice),
+                                    style: const TextStyle(
+                                      color: _accent,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: OutlinedButton.icon(
+                                      onPressed: _bukaModalKeranjang,
+                                      icon: const Icon(
+                                        Icons.shopping_bag_outlined,
+                                        size: 18,
+                                      ),
+                                      label: const Text('Keranjang'),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: _accent,
+                                        side: const BorderSide(color: _line),
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 11,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: FilledButton.icon(
+                                      onPressed: _pilihMenu,
+                                      icon: const Icon(Icons.add_rounded,
+                                          size: 18),
+                                      label: const Text('Tambah menu'),
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor: _accent,
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 11,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
                         );
                       },
                     ),
-                  ],
-                ),
-                _Field(
-                  controller: _menuCtrl,
-                  hint: 'Klik "Menu List" untuk memilih menu makanan & minuman',
-                  readOnly: true,
-                  onTap: _pilihMenu,
-                  suffix: IconButton(
-                    icon: const Icon(Icons.shopping_cart_outlined, size: 20),
-                    onPressed: _bukaModalKeranjang,
-                  ),
-                ),
-                const SizedBox(height: 8),
-
-                // Rincian Ringkas Keranjang jika sudah memilih menu
-                ListenableBuilder(
-                  listenable: CartStore.instance,
-                  builder: (context, _) {
-                    final cart = CartStore.instance;
-
-                    if (cart.isEmpty) {
-                      return PrimaryButton(
-                        label: 'Menu List',
-                        height: 45,
-                        width: double.infinity,
-                        onPressed: _pilihMenu,
-                      );
-                    }
-
-                    return Container(
-                      margin: const EdgeInsets.only(top: 4, bottom: 4),
-                      padding: const EdgeInsets.all(12),
+                    const SizedBox(height: 20),
+                    Container(
+                      padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: AppColors.fieldBg,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: AppColors.divider),
+                        color: _selected,
+                        borderRadius: BorderRadius.circular(16),
                       ),
-                      child: Column(
+                      child: const Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                '${cart.totalCount} Menu Dipesan',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13,
-                                  color: AppColors.textDark,
-                                ),
-                              ),
-                              Text(
-                                _currency.format(cart.totalPrice),
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                  color: AppColors.button,
-                                ),
-                              ),
-                            ],
+                          Icon(
+                            Icons.info_outline_rounded,
+                            size: 20,
+                            color: _accent,
                           ),
-                          const SizedBox(height: 10),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: OutlinedButton.icon(
-                                  onPressed: _bukaModalKeranjang,
-                                  icon: const Icon(Icons.shopping_bag_outlined, size: 16),
-                                  label: const Text('Tampilkan Pesanan'),
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: AppColors.button,
-                                    side: const BorderSide(color: AppColors.button),
-                                    padding: const EdgeInsets.symmetric(vertical: 8),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                  ),
-                                ),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Reservasi akan dikonfirmasi oleh pihak restoran setelah pesanan dikirim.',
+                              style: TextStyle(
+                                color: _ink,
+                                fontSize: 12,
+                                height: 1.4,
                               ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: PrimaryButton(
-                                  label: '+ Tambah Menu',
-                                  height: 38,
-                                  onPressed: _pilihMenu,
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ],
                       ),
-                    );
-                  },
+                    ),
+                    const SizedBox(height: 18),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 54,
+                      child: FilledButton.icon(
+                        onPressed: _pesan,
+                        icon: const Icon(Icons.arrow_forward_rounded),
+                        label: const Text(
+                          'Kirim reservasi',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: _accent,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-
-                const SizedBox(height: 18),
-                const _Label('Untuk Berapa Orang?*'),
-                _RadioGroup(
-                  options: _opsiJumlahOrang,
-                  value: _jumlahOrang,
-                  onChanged: (v) => setState(() => _jumlahOrang = v),
-                ),
-                const SizedBox(height: 18),
-                const _Label('Pilih Ruangan'),
-                _RadioGroup(
-                  options: _opsiRuangan,
-                  value: _ruangan,
-                  onChanged: (v) => setState(() => _ruangan = v),
-                ),
-                const SizedBox(height: 26),
-                Center(
-                  child: PrimaryButton(
-                    label: 'Pesan',
-                    width: 120,
-                    height: 45,
-                    onPressed: _pesan,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            color: _ReservasiScreenState._selected,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Icon(icon, color: _ReservasiScreenState._accent, size: 21),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: _ReservasiScreenState._ink,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  color: _ReservasiScreenState._muted,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -388,12 +577,13 @@ class _Label extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.only(bottom: 7),
       child: Text(
         text,
         style: const TextStyle(
-          fontWeight: FontWeight.bold,
-          color: AppColors.textDark,
+          color: _ReservasiScreenState._ink,
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
@@ -407,6 +597,7 @@ class _Field extends StatelessWidget {
     this.readOnly = false,
     this.onTap,
     this.suffix,
+    this.prefixIcon,
   });
 
   final TextEditingController controller;
@@ -414,6 +605,7 @@ class _Field extends StatelessWidget {
   final bool readOnly;
   final VoidCallback? onTap;
   final Widget? suffix;
+  final IconData? prefixIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -421,21 +613,37 @@ class _Field extends StatelessWidget {
       controller: controller,
       readOnly: readOnly,
       onTap: onTap,
-      style: const TextStyle(color: AppColors.textDark),
+      style: const TextStyle(color: _ReservasiScreenState._ink, fontSize: 14),
       decoration: InputDecoration(
         hintText: hint,
+        hintStyle: const TextStyle(color: _ReservasiScreenState._muted),
+        prefixIcon: prefixIcon == null
+            ? null
+            : Icon(prefixIcon, color: _ReservasiScreenState._muted, size: 20),
         suffixIcon: suffix,
         filled: true,
-        fillColor: AppColors.fieldBg,
+        fillColor: _ReservasiScreenState._field,
         isDense: true,
-        contentPadding: const EdgeInsets.all(12),
-        border: InputBorder.none,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: _ReservasiScreenState._line),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(
+            color: _ReservasiScreenState._accent,
+            width: 1.5,
+          ),
+        ),
       ),
     );
   }
 }
 
-/// Pengganti RadioGroup + RadioButton (satu pilihan dari beberapa opsi).
 class _RadioGroup extends StatelessWidget {
   const _RadioGroup({
     required this.options,
@@ -449,25 +657,32 @@ class _RadioGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Wrap(
+      spacing: 8,
+      runSpacing: 2,
       children: [
         for (final option in options)
-          InkWell(
-            onTap: () => onChanged(option),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Row(
-                children: [
-                  Icon(
-                    option == value
-                        ? Icons.radio_button_checked
-                        : Icons.radio_button_unchecked,
-                    color: option == value ? AppColors.button : Colors.grey,
-                  ),
-                  const SizedBox(width: 12),
-                  Text(option, style: const TextStyle(color: AppColors.textDark)),
-                ],
-              ),
+          ChoiceChip(
+            label: Text(option),
+            selected: option == value,
+            onSelected: (_) => onChanged(option),
+            showCheckmark: false,
+            labelStyle: TextStyle(
+              color: option == value
+                  ? _ReservasiScreenState._accent
+                  : _ReservasiScreenState._ink,
+              fontSize: 13,
+              fontWeight: option == value ? FontWeight.w600 : FontWeight.normal,
+            ),
+            backgroundColor: _ReservasiScreenState._field,
+            selectedColor: _ReservasiScreenState._selected,
+            side: BorderSide(
+              color: option == value
+                  ? _ReservasiScreenState._accent
+                  : _ReservasiScreenState._line,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(13),
             ),
           ),
       ],
